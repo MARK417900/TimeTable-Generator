@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Timetable Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #eef0fb;
+            --card: #fff;
+            --tx: #1e2235;
+            --mu: #6b7390;
+            --pr: #5b4cf0;
+            --pr2: #8a5cf6;
+            --bd: #e4e7f4;
+            --inp: #f7f8fe;
+            --sh: 0 10px 30px rgba(60, 50, 160, .12);
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px)
+        }
+
+        @media (prefers-color-scheme:dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0f111a;
+                --card: #1a1e2d;
+                --tx: #eef0fa;
+                --mu: #9aa3c0;
+                --bd: #2a3047;
+                --inp: #141725;
+                --sh: 0 10px 30px rgba(0, 0, 0, .4)
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #0f111a;
+            --card: #1a1e2d;
+            --tx: #eef0fa;
+            --mu: #9aa3c0;
+            --bd: #2a3047;
+            --inp: #141725;
+            --sh: 0 10px 30px rgba(0, 0, 0, .4)
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--tx);
+            font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--pr), var(--pr2));
+            color: #fff;
+            padding: 34px 16px 70px;
+            text-align: center
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -.5px
+        }
+
+        .hero p {
+            margin: 2px 0 0;
+            opacity: .85;
+            font-size: .95rem
+        }
+
+        .wrap {
+            max-width: 940px;
+            margin: -48px auto 40px;
+            padding: 0 14px
+        }
+
+        .steps {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px
+        }
+
+        .steps div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 12px;
+            background: var(--card);
+            box-shadow: var(--sh);
+            font-size: .82rem;
+            color: var(--mu);
+            font-weight: 500
+        }
+
+        .steps b {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bd);
+            display: inline-grid;
+            place-items: center;
+            font-size: .75rem
+        }
+
+        .steps .on {
+            color: var(--pr)
+        }
+
+        .steps .on b {
+            background: linear-gradient(135deg, var(--pr), var(--pr2));
+            color: #fff
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: var(--sh)
+        }
+
+        label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 500;
+            color: var(--tx);
+            margin: 14px 0 6px
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--bd);
+            border-radius: 12px;
+            background: var(--inp);
+            color: var(--tx);
+            font: inherit;
+            font-size: .95rem;
+            transition: .2s
+        }
+
+        input:focus,
+        select:focus {
+            outline: 0;
+            border-color: var(--pr);
+            /* box-shadow: 0 0 0 4px rgba(91, 76, 240, .15) */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px
+        }
+
+        button {
+            padding: 12px 24px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--pr), var(--pr2));
+            color: #fff;
+            font: inherit;
+            font-weight: 600;
+            font-size: .95rem;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(91, 76, 240, .35);
+            transition: .2s
+        }
+
+        button:hover {
+            transform: translateY(-2px)
+        }
+
+        button.g {
+            padding: 5px 14px;
+            background: transparent;
+            color: var(--tx);
+            border: 1.5px solid var(--bd);
+            box-shadow: none
+        }
+
+        .bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+            flex-wrap: wrap
+        }
+
+        .err {
+            color: #e5383b;
+            margin-top: 12px;
+            min-height: 1em;
+            font-size: .88rem
+        }
+
+        h3 {
+            margin: 22px 0 10px;
+            font-size: 1rem
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px
+        }
+
+        .tabs button {
+            background: var(--inp);
+            color: var(--tx);
+            border: 1.5px solid var(--bd);
+            padding: 8px 16px;
+            box-shadow: none;
+            font-size: .85rem
+        }
+
+        .tabs .on {
+            background: linear-gradient(135deg, var(--pr), var(--pr2));
+            color: #fff;
+            border-color: transparent
+        }
+
+        .hint {
+            color: var(--mu);
+            font-size: .8rem;
+            margin: 12px 0 0
+        }
+
+        .tw {
+            overflow-x: auto
+        }
+
+        .sheet {
+            display: none;
+            background: var(--card);
+            border-radius: 18px;
+            box-shadow: var(--sh);
+            overflow: hidden;
+            margin-top: 16px
+        }
+
+        .sheet.show {
+            display: block
+        }
+
+        .banner {
+            background: linear-gradient(135deg, var(--pr), var(--pr2));
+            color: #fff;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .banner h2 {
+            margin: 0;
+            font-size: 1.35rem
+        }
+
+        .banner span {
+            opacity: .85;
+            font-size: .85rem
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, .22);
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-weight: 600;
+            font-size: .9rem
+        }
+
+        .body {
+            padding: 18px 20px
+        }
+
+        table.tt {
+            border-collapse: separate;
+            border-spacing: 5px;
+            width: 100%;
+            min-width: 600px
+        }
+
+        .tt th {
+            padding: 9px 6px;
+            font-size: .78rem;
+            font-weight: 600;
+            border-radius: 10px;
+            background: var(--inp);
+            color: var(--tx)
+        }
+
+        .tt th small {
+            display: block;
+            font-weight: 600;
+            color: var(--pr);
+            font-size: .72rem;
+            margin-top: 3px
+        }
+
+        .row3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 46px;
+            gap: 10px;
+            margin-bottom: 10px
+        }
+
+        .row3 button {
+            padding: 0;
+            box-shadow: none
+        }
+
+        .tt .brk {
+            background: repeating-linear-gradient(45deg, #fff4d6, #fff4d6 8px, #ffe9ad 8px, #ffe9ad 16px);
+            color: #8a5a00;
+            border-left: 0;
+            width: 46px
+        }
+
+        .tt th.brk small {
+            color: #8a5a00
+        }
+
+        .tt td.brk span {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            letter-spacing: 4px;
+            font-weight: 700;
+            font-size: .78rem
+        }
+
+        .tt th.day {
+            background: linear-gradient(135deg, var(--pr), var(--pr2));
+            color: #fff;
+            width: 96px
+        }
+
+        .tt td {
+            padding: 9px 6px;
+            text-align: center;
+            border-radius: 10px;
+            font-size: .8rem;
+            color: #1e2235;
+            border-left: 4px solid
+        }
+
+        .tt td b {
+            display: block;
+            font-weight: 600
+        }
+
+        .tt td small {
+            display: block;
+            color: #4a5068;
+            font-size: .7rem;
+            margin-top: 2px
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px
+        }
+
+        .legend span {
+            font-size: .72rem;
+            padding: 5px 11px;
+            border-radius: 999px;
+            color: #1e2235;
+            border: 1px solid
+        }
+
+        .foot {
+            display: flex;
+            justify-content: space-between;
+            color: var(--mu);
+            font-size: .7rem;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--bd)
+        }
+
+        .hide {
+            display: none
+        }
+
+        .ckw {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            display: grid;
+            place-items: center;
+            z-index: 9
+        }
+
+        .ckw.hide {
+            display: none
+        }
+
+        .ckb {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 20px;
+            width: 290px;
+            max-width: 92vw;
+            box-shadow: var(--sh)
+        }
+
+        .ckt {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 2.4rem;
+            font-weight: 600;
+            margin-bottom: 10px
+        }
+
+        .ckt span {
+            cursor: pointer;
+            opacity: .45;
+            padding: 0 4px
+        }
+
+        .ckt span.on {
+            opacity: 1;
+            color: var(--pr)
+        }
+
+        .ap {
+            display: flex;
+            flex-direction: column;
+            margin-left: 10px;
+            font-size: .78rem
+        }
+
+        .ap b {
+            padding: 3px 9px;
+            border: 1.5px solid var(--bd);
+            cursor: pointer;
+            color: var(--mu)
+        }
+
+        .ap b.on {
+            background: var(--pr);
+            color: #fff;
+            border-color: var(--pr)
+        }
+
+        #cks {
+            width: 100%;
+            touch-action: none;
+            cursor: pointer
+        }
+
+        .tm {
+            cursor: pointer;
+            text-align: center
+        }
+
+        .row4,
+        .cl {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px
+        }
+
+        .cl {
+            font-size: .75rem;
+            color: var(--mu);
+            margin-bottom: 4px
+        }
+
+        .row4.bk input {
+            background: #fff4d6;
+            color: #8a5a00;
+            border-color: #f3cf6b
+        }
+
+        .tt th.sec {
+            width: 34px
+        }
+
+        .sheet.all .tt td {
+            padding: 5px 4px;
+            font-size: .7rem
+        }
+
+        .sheet.all .tt {
+            border-spacing: 3px
+        }
+
+        @media (max-width:560px) {
+            .steps span {
+                display: none
+            }
+
+            .hero h1 {
+                font-size: 1.5rem
+            }
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact
+            }
+
+            body {
+                background: #fff;
+                color: #000
+            }
+
+            .hero,
+            .noprint {
+                display: none !important
+            }
+
+            .wrap {
+                max-width: none;
+                margin: 0;
+                padding: 0
+            }
+
+            .sheet {
+                display: block !important;
+                box-shadow: none;
+                border: 1px solid #d9dcf0;
+                border-radius: 14px;
+                margin: 0;
+                page-break-after: always;
+                break-after: page
+            }
+
+            .sheet:last-child {
+                page-break-after: auto
+            }
+
+            .tw {
+                overflow: visible
+            }
+
+            table.tt {
+                min-width: 0
+            }
+
+            .tt td {
+                font-size: .74rem
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 10mm
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero noprint">
+        <h1>📅 Timetable Generator</h1>
+        <p>Create Beautiful & Clash-free timetables</p>
+    </div>
+    <div class="wrap">
+
+
+        <div class="card noprint" id="p1">
+            <label>College name</label><input id="col" placeholder="e.g. Shri Siddhi Vinayak institute of Technology Bareilly">
+            <label>Class</label><input id="cls" placeholder="e.g. B.Tech 1st Year">
+            <div class="grid">
+                <div><label>Number of sections</label><input id="ns" type="number" min="1" max="12" value="3"></div>
+
+                <div><label>Periods per day</label><input id="nper" type="number" min="1" max="12" value="6"></div>
+                <div><label>Working days</label><select id="nd">
+                        <option value="5">Mon – Fri</option>
+                        <option value="6" selected>Mon – Sat</option>
+                    </select></div>
+            </div>
+            <div class="err" id="e1"></div>
+            <div class="bar"><button onclick="toStep2()">Next →</button></div>
+        </div>
+
+        <div class="card noprint hide" id="p2">
+            <h3 style="margin-top:0">👩‍🏫 Professors &amp; subjects</h3>
+            <div id="plist"></div><button class="g" onclick="addProf()">＋ Add professor</button>
+            <h3>⏰ Set Periods Timing</h3>
+            <div class="cl"><span>Periods</span><span>Period Starts at</span><span>Period Ends at</span></div>
+            <div id="perlist"></div>
+            <div class="err" id="e2"></div>
+            <div class="bar"><button class="g" onclick="show(1)">← Back</button><button onclick="generate()">Generate
+                    Timetable ✨</button></div>
+        </div>
+
+        <div class="hide" id="p3">
+            <div class="card noprint">
+                <div class="tabs" id="tabs"></div>
+                <div class="bar" style="margin-top:0"><button class="g" onclick="show(2)">← Edit</button><button
+                        onclick="window.print()">⬇ Download PDF</button></div>
+            </div>
+            <div id="sheets"></div>
+        </div>
+    </div>
+    <script>
+        const $ = id => document.getElementById(id);
+        const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        let cfg = {}, profs = [], pers = [], brk = null;
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const bg = i => `hsl(${(i * 47 + 210) % 360},80%,92%)`, bd = i => `hsl(${(i * 47 + 210) % 360},65%,50%)`;
+        function show(n) { [1, 2, 3].forEach(i => { $("p" + i).classList.toggle("hide", i !== n) }); scrollTo(0, 0) }
+        const pad = n => String(n).padStart(2, "0");
+        function fmt(m) { const h = Math.floor(m / 60) % 24; return `${h % 12 || 12}:${pad(m % 60)} ${h >= 12 ? "PM" : "AM"}` }
+        function rng(a, b) { let x = fmt(a); const y = fmt(b); if (x.slice(-2) === y.slice(-2)) x = x.slice(0, -3); return x + " – " + y }
+        function trow(id, p) { return `<div class="row4 ${id === "b" ? "bk" : ""}"><input id="pl${id}" value="${esc(p.n)}"><input class="tm" readonly id="ps${id}" data-v="${p.s}" value="${fmt(p.s)}" onclick="openClock(this)"><input class="tm" readonly id="pe${id}" data-v="${p.e}" value="${fmt(p.e)}" onclick="openClock(this)"></div>` }
+        let ck = {};
+        document.body.insertAdjacentHTML("beforeend", `<div id="ckw" class="ckw hide noprint"><div class="ckb"><div class="ckt"><span id="ckh" onclick="ckMode(0)"></span>:<span id="ckm" onclick="ckMode(1)"></span><div class="ap"><b id="ck0" onclick="ckAP(0)">AM</b><b id="ck1" onclick="ckAP(1)">PM</b></div></div><svg id="cks" viewBox="-100 -100 200 200"></svg><div class="bar" style="margin-top:10px"><button class="g" onclick="ckClose()">Cancel</button><button onclick="ckOk()">OK</button></div></div></div>`);
+        {
+            const sv = $("cks"); let dn = false; const pt = e => { const r = sv.getBoundingClientRect(), a = (Math.atan2(e.clientX - r.left - r.width / 2, -(e.clientY - r.top - r.height / 2)) * 180 / Math.PI + 360) % 360; if (ck.mode) ck.mi = Math.round(a / 6) % 60; else ck.h = Math.round(a / 30) % 12 || 12; ckUpd() };
+            sv.onpointerdown = e => { dn = true; sv.setPointerCapture(e.pointerId); pt(e) }; sv.onpointermove = e => dn && pt(e); sv.onpointerup = () => { if (dn) { dn = false; if (!ck.mode) setTimeout(() => ckMode(1), 250) } }
+        }
+        function openClock(el) { const m = +el.dataset.v, H = Math.floor(m / 60) % 24; ck = { el, h: H % 12 || 12, mi: m % 60, ap: H >= 12 ? 1 : 0, mode: 0 }; $("ckw").classList.remove("hide"); ckMode(0) }
+        function ckMode(x) {
+            ck.mode = x; let s = `<circle r="98" fill="var(--inp)"/><g id="hand" style="transition:transform .25s"><line y2="-64" stroke="var(--pr)" stroke-width="2"/><circle cy="-80" r="15" fill="var(--pr)" opacity=".3"/></g><circle r="4" fill="var(--pr)"/>`;
+            for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; s += `<text x="${(80 * Math.sin(a)).toFixed(1)}" y="${(-80 * Math.cos(a)).toFixed(1)}" text-anchor="middle" dy=".35em" font-size="13" fill="var(--tx)" style="pointer-events:none">${x ? pad(i * 5) : (i || 12)}</text>` }
+            $("cks").innerHTML = s; ckUpd()
+        }
+        function ckUpd() { $("ckh").textContent = ck.h; $("ckm").textContent = pad(ck.mi); $("ckh").classList.toggle("on", !ck.mode); $("ckm").classList.toggle("on", !!ck.mode); $("ck0").classList.toggle("on", !ck.ap); $("ck1").classList.toggle("on", !!ck.ap); $("hand").style.transform = `rotate(${ck.mode ? ck.mi * 6 : (ck.h % 12) * 30}deg)` }
+        function ckAP(v) { ck.ap = v; ckUpd() }
+        function ckClose() { $("ckw").classList.add("hide") }
+        function ckOk() { const m = ((ck.h % 12) + ck.ap * 12) * 60 + ck.mi; ck.el.dataset.v = m; ck.el.value = fmt(m); ckClose() }
+        function syncProfs() { profs = [...document.querySelectorAll("#plist .row3")].map(r => ({ n: r.children[0].value.trim(), s: r.children[1].value.trim() })) }
+        function renderProfs() { $("plist").innerHTML = profs.map((f, i) => `<div class="row3"><input placeholder="Professor Name" value="${esc(f.n)}"><input placeholder="Subject" value="${esc(f.s)}"><button class="g" title="Remove" onclick="delProf(${i})">✕</button></div>`).join("") }
+        function addProf() { syncProfs(); profs.push({ n: "", s: "" }); renderProfs() }
+        function delProf(i) { syncProfs(); if (profs.length > 1) profs.splice(i, 1); renderProfs() }
+        function toStep2() {
+            const c = { col: $("col").value.trim(), cls: $("cls").value.trim(), ns: +$("ns").value, nper: +$("nper").value, nd: +$("nd").value };
+            if (!c.col || !c.cls) return $("e1").textContent = "Please enter college and class name.";
+            if (!(c.ns > 0 && c.nper > 0)) return $("e1").textContent = "Enter valid numbers.";
+
+            $("e1").textContent = ""; cfg = c;
+            syncProfs(); if (!profs.length) profs = [{ n: "", s: "" }, { n: "", s: "" }, { n: "", s: "" }]; renderProfs(); let h;
+
+            h = ""; { const half = Math.floor(c.nper / 2), ok = pers.length === c.nper; let t = 540; for (let i = 0; i < c.nper; i++) { if (c.nper > 1 && i === half) { const b = ok && brk ? brk : { n: "Break", s: t, e: t + 20 }; h += trow("b", b); t = b.e } const p = ok ? pers[i] : { n: "Period " + (i + 1), s: t, e: t + 45 }; h += trow(i, p); t = p.e } }
+            $("perlist").innerHTML = h; show(2);
+        }
+        function generate() {
+            const { nper, ns, nd, col, cls } = cfg; syncProfs(); profs = profs.filter(f => f.n); const np = profs.length; pers = []; if (np < ns) return $("e2").textContent = "Add at least " + ns + " professors (one per section) so no professor is needed in two sections at once.";
+
+            const rd = id => ({ n: $("pl" + id).value.trim() || (id === "b" ? "Break" : "Period " + (+id + 1)), s: +$("ps" + id).dataset.v, e: +$("pe" + id).dataset.v }); for (let i = 0; i < nper; i++)pers.push(rd(i));
+            brk = nper > 1 ? rd("b") : null; if (pers.concat(brk || []).some(p => p.e <= p.s)) return $("e2").textContent = "End time must be after start time for every period."; pers.forEach(p => p.t = rng(p.s, p.e)); if (brk) brk.t = rng(brk.s, brk.e); const half = Math.floor(nper / 2);
+
+            $("e2").textContent = "";
+            const step = Math.max(1, Math.floor(np / 2) + (np % 2 === 0 ? 1 : 0));
+            const today = new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+            const legend = profs.map((f, i) => `<span style="background:${bg(i)};border-color:${bd(i)}">${esc(f.n)} · ${esc(f.s || "—")}</span>`).join("");
+            let tabs = "", sheets = "";
+            for (let s = 0; s < ns; s++) {
+                let t = `<table class="tt"><tr><th class="day">Day</th>${pers.map((p, i) => (brk && i === half ? `<th class="brk">${esc(brk.n)}<small>${esc(brk.t)}</small></th>` : "") + `<th>${esc(p.n)}<small>${esc(p.t)}</small></th>`).join("")}</tr>`;
+                for (let d = 0; d < nd; d++) {
+                    t += `<tr><th class="day">${DAYS[d]}</th>`;
+                    for (let p = 0; p < nper; p++) { if (brk && p === half && d === 0) t += `<td class="brk" rowspan="${nd}"><span>${esc(brk.n.toUpperCase())}</span></td>`; const k = (s + p + d * step) % np, f = profs[k]; t += `<td style="background:${bg(k)};border-color:${bd(k)}"><b>${esc(f.s || "—")}</b><small>${esc(f.n)}</small></td>` }
+                    t += "</tr>";
+                }
+                t += "</table>";
+                const L = String.fromCharCode(65 + s);
+                tabs += `<button onclick="tab(${s + 1})">Section ${L}</button>`;
+                sheets += `<div class="sheet"><div class="banner"><div><h2>${esc(col)}</h2><span>Weekly Timetable</span></div><div class="chip">${esc(cls)} · Section ${L}</div></div><div class="body"><div class="tw">${t}</div><div class="legend">${legend}</div><div class="foot"><span>${esc(col)} — ${esc(cls)}</span><span>Created on ${today}</span></div></div></div>`;
+            }
+            const hd = pers.map((p, i) => (brk && i === half ? `<th class="brk">${esc(brk.n)}<small>${esc(brk.t)}</small></th>` : "") + `<th>${esc(p.n)}<small>${esc(p.t)}</small></th>`).join("");
+            let a = `<table class="tt"><tr><th class="day">Day</th><th class="day sec">Sec</th>${hd}</tr>`;
+            for (let d = 0; d < nd; d++)for (let s = 0; s < ns; s++) { a += `<tr>${s ? "" : `<th class="day" rowspan="${ns}">${DAYS[d]}</th>`}<th class="sec">${String.fromCharCode(65 + s)}</th>`; for (let p = 0; p < nper; p++) { if (brk && p === half && d === 0 && s === 0) a += `<td class="brk" rowspan="${nd * ns}"><span>${esc(brk.n.toUpperCase())}</span></td>`; const k = (s + p + d * step) % np, f = profs[k]; a += `<td style="background:${bg(k)};border-color:${bd(k)}"><b>${esc(f.s || "—")}</b><small>${esc(f.n)}</small></td>` } a += "</tr>" } a += "</table>";
+            tabs = `<button class="on" onclick="tab(0)">📋 All Sections</button>` + tabs;
+            sheets = `<div class="sheet show all"><div class="banner"><div><h2>${esc(col)}</h2><span>Master Timetable</span></div><div class="chip">${esc(cls)} · All Sections</div></div><div class="body"><div class="tw">${a}</div><div class="legend">${legend}</div><div class="foot"><span>${esc(col)} — ${esc(cls)}</span><span>Created on ${today}</span></div></div></div>` + sheets;
+            $("tabs").innerHTML = tabs; $("sheets").innerHTML = sheets; show(3);
+        }
+        function tab(i) { document.querySelectorAll(".tabs button").forEach((b, j) => b.classList.toggle("on", i === j)); document.querySelectorAll(".sheet").forEach((b, j) => b.classList.toggle("show", i === j)) }
+    </script>
+</body>
+
+</html>
